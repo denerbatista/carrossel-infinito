@@ -33,6 +33,9 @@
             border-radius:18px;
             background:#14182e;
             overflow:hidden;
+
+            /* reserva espaço visual pro rodapé integrado */
+            padding-bottom: 150px;
         }
         .viewport{
             position:absolute;
@@ -73,6 +76,7 @@
             position:absolute;
             inset:0;
             pointer-events:none;
+            z-index: 20;
         }
         .controls button{
             pointer-events:auto;
@@ -90,6 +94,86 @@
         }
         #prev{ left:12px; }
         #next{ right:12px; }
+
+        /* ===== RODAPÉ INTEGRADO (dentro do carrossel) ===== */
+        .carouselInfo{
+            position:absolute;
+            left:0;
+            right:0;
+            bottom:0;
+            z-index: 15;
+
+            padding: 14px 14px 16px;
+            background: linear-gradient(
+                    to top,
+                    rgba(0,0,0,.72) 0%,
+                    rgba(0,0,0,.50) 55%,
+                    rgba(0,0,0,0) 100%
+            );
+            backdrop-filter: blur(6px);
+        }
+
+        .carouselText{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            margin-bottom:10px;
+            max-width: 980px;
+        }
+        .carouselTitle{
+            margin:0;
+            font-size:18px;
+            font-weight:700;
+        }
+        .carouselDesc{
+            margin:0;
+            opacity:.88;
+            line-height:1.35;
+            font-size:14px;
+        }
+
+        .carouselDots{
+            display:flex;
+            justify-content:center;
+            gap:8px;
+            margin: 10px 0 12px;
+        }
+        .carouselDot{
+            width:10px;
+            height:10px;
+            border-radius:999px;
+            border:none;
+            cursor:pointer;
+            background:rgba(255,255,255,.35);
+            transition:all .25s ease;
+        }
+        .carouselDot.active{
+            width:34px;
+            background:rgba(255,255,255,.92);
+        }
+
+        .carouselLabels{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            justify-content:center;
+        }
+        .carouselLabel{
+            border:none;
+            cursor:pointer;
+            padding:10px 12px;
+            border-radius:10px;
+            background:rgba(255,255,255,.10);
+            color:#fff;
+            font-weight:600;
+            font-size:13px;
+            border:1px solid rgba(255,255,255,.14);
+            transition:all .25s ease;
+        }
+        .carouselLabel.active{
+            background:rgba(255,255,255,.18);
+            border-color:rgba(255,255,255,.24);
+        }
 
         /* ===== MODAL ===== */
         .modal{
@@ -148,44 +232,48 @@
         @media (max-width: 768px) and (orientation: portrait) {
 
             :root{
-                --gapX: 42px;     /* aproxima as páginas */
-                --depth: 70px;    /* reduz profundidade 3D */
-                --tiltY: 8deg;    /* menos inclinação */
+                --gapX: 42px;
+                --depth: 70px;
+                --tiltY: 8deg;
                 --sideScale: 0.92;
             }
 
             .carousel{
-                height: 78vh; /* evita “esticar” demais */
+                height: 78vh;
+                padding-bottom: 175px; /* rodapé ocupa mais no mobile */
             }
 
             .pageImg{
-                max-width: 68vw;   /* páginas mais largas no celular */
+                max-width: 68vw;
                 max-height: 70vh;
             }
 
-            /* Setas fora da área das páginas */
-            .controls{
-                pointer-events:none;
-            }
-
+            /* setas centralizadas */
             .controls button{
-                top: auto;
-                bottom: 14px;
-                transform: none;
-                pointer-events:auto;
+                top: 50%;
+                transform: translateY(-50%);
                 width:48px;
                 height:48px;
             }
 
             #prev{ left: 14px; }
             #next{ right: 14px; }
+
+            .carouselTitle{ font-size:16px; }
+            .carouselDesc{ font-size:13px; }
+            .carouselLabel{ padding:9px 10px; font-size:12px; }
+        }
+
+        @media (max-width: 420px) and (orientation: portrait) {
+            :root{
+                --gapX: 34px;
+                --depth: 60px;
+            }
         }
 
         @media (max-width: 768px) and (orientation: portrait){
             .belt{ touch-action: pan-y; }
         }
-
-
     </style>
 </head>
 
@@ -195,12 +283,29 @@
     <div class="viewport">
         <div class="belt" id="belt">
             <img class="pageImg" src="./img/1.png" alt="1" draggable="false">
+            <img class="pageImg" src="./img/2.png" alt="2" draggable="false">
+            <img class="pageImg" src="./img/3.png" alt="3" draggable="false">
+            <img class="pageImg" src="./img/4.png" alt="4" draggable="false">
+            <img class="pageImg" src="./img/5.png" alt="5" draggable="false">
+            <img class="pageImg" src="./img/6.png" alt="6" draggable="false">
+            <img class="pageImg" src="./img/7.png" alt="7" draggable="false">
         </div>
     </div>
 
     <div class="controls">
         <button id="prev">◀</button>
         <button id="next">▶</button>
+    </div>
+
+    <!-- ===== RODAPÉ INTEGRADO (dentro do carrossel) ===== -->
+    <div class="carouselInfo" id="carouselInfo">
+        <div class="carouselText">
+            <h3 class="carouselTitle" id="carouselTitle">Página 1</h3>
+            <p class="carouselDesc" id="carouselDesc">Descrição da Página 1.</p>
+        </div>
+
+        <div class="carouselDots" id="carouselDots" aria-label="Navegação por bolinhas"></div>
+        <div class="carouselLabels" id="carouselLabels" aria-label="Navegação por botões"></div>
     </div>
 </div>
 
@@ -229,8 +334,95 @@
 
         const mod = (n,m)=>((n % m) + m) % m;
 
+        // ===== TÍTULO + DESCRIÇÃO (edite como quiser) =====
+        const pageMeta = [
+            { title: "Página 1", desc: "Descrição da Página 1." },
+            { title: "Página 2", desc: "Descrição da Página 2." },
+            { title: "Página 3", desc: "Descrição da Página 3." },
+            { title: "Página 4", desc: "Descrição da Página 4." },
+            { title: "Página 5", desc: "Descrição da Página 5." },
+            { title: "Página 6", desc: "Descrição da Página 6." },
+            { title: "Página 7", desc: "Descrição da Página 7." },
+        ];
+
+        const titleEl = document.getElementById('carouselTitle');
+        const descEl = document.getElementById('carouselDesc');
+        const dotsWrap = document.getElementById('carouselDots');
+        const labelsWrap = document.getElementById('carouselLabels');
+        const carouselInfo = document.getElementById('carouselInfo');
+
         // índice real infinito
         let activeReal = 0; // começa na imagem 1
+
+        // ===== AUTOPLAY =====
+        let autoplay = true;
+        let autoplayTimer = null;
+
+        function stopAutoplay(){
+            if (autoplayTimer) clearInterval(autoplayTimer);
+            autoplayTimer = null;
+        }
+
+        function startAutoplay(){
+            stopAutoplay();
+            autoplayTimer = setInterval(() => {
+                if (!autoplay) return;
+                if (modal.classList.contains('open')) return;
+                go(1);
+            }, 4500);
+        }
+
+        function userInteracted(){
+            autoplay = false;
+            setTimeout(() => { autoplay = true; }, 9000);
+        }
+
+        function setActiveByIndex(index){
+            activeReal = index;
+            render();
+            userInteracted();
+        }
+
+        function updateInfo(activeIndex){
+            const meta = pageMeta[activeIndex] || { title: `Página ${activeIndex+1}`, desc: "" };
+            if (titleEl) titleEl.textContent = meta.title;
+            if (descEl) descEl.textContent = meta.desc;
+
+            if (dotsWrap){
+                [...dotsWrap.children].forEach((b, i) => b.classList.toggle('active', i === activeIndex));
+            }
+            if (labelsWrap){
+                [...labelsWrap.children].forEach((b, i) => b.classList.toggle('active', i === activeIndex));
+            }
+        }
+
+        // cria bolinhas e botões (1 vez)
+        if (dotsWrap){
+            dotsWrap.innerHTML = '';
+            pages.forEach((_, i) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'carouselDot';
+                b.setAttribute('aria-label', `Ir para ${pageMeta[i]?.title || `Página ${i+1}`}`);
+                b.addEventListener('click', (e) => { e.stopPropagation(); setActiveByIndex(i); });
+                dotsWrap.appendChild(b);
+            });
+        }
+
+        if (labelsWrap){
+            labelsWrap.innerHTML = '';
+            pages.forEach((_, i) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'carouselLabel';
+                b.textContent = pageMeta[i]?.title || `Página ${i+1}`;
+                b.addEventListener('click', (e) => { e.stopPropagation(); setActiveByIndex(i); });
+                labelsWrap.appendChild(b);
+            });
+        }
+
+        // evita que clique no rodapé integrado dispare ações do carrossel
+        carouselInfo?.addEventListener('click', (e) => e.stopPropagation());
 
         // ===== CARROSSEL (infinito de verdade) =====
         function render(){
@@ -247,7 +439,6 @@
             const lift = parseFloat(root.getPropertyValue('--lift')) || 0;
 
             pages.forEach((img, i) => {
-                // diferença circular sempre em [-half, +half]
                 let d = i - activeIndex;
                 if (d >  half) d -= n;
                 if (d < -half) d += n;
@@ -269,6 +460,8 @@
 
                 img.style.filter = (d === 0) ? 'none' : `brightness(${0.92 - abs*0.03})`;
             });
+
+            updateInfo(activeIndex);
         }
 
         function go(delta){
@@ -276,14 +469,16 @@
             render();
         }
 
-        document.getElementById('prev').onclick = ()=> go(-1);
-        document.getElementById('next').onclick = ()=> go(1);
+        document.getElementById('prev').onclick = ()=> { userInteracted(); go(-1); };
+        document.getElementById('next').onclick = ()=> { userInteracted(); go(1); };
 
-        // wheel do carrossel (navega infinito sem deslocar)
+        // wheel do carrossel
         let wheelLock = false;
         belt.addEventListener('wheel', (e) => {
             if (modal.classList.contains('open')) return;
             e.preventDefault();
+
+            userInteracted();
 
             if (wheelLock) return;
             wheelLock = true;
@@ -294,7 +489,7 @@
             else go(-1);
         }, { passive:false });
 
-// ===== SWIPE NO CELULAR (deslizar o dedo = 1 página) =====
+        // swipe no celular
         let swipeStartX = null;
         let swipeStartY = null;
         let swipeStartT = 0;
@@ -324,37 +519,32 @@
 
             swipeStartX = swipeStartY = null;
 
-            // Ignora se foi mais vertical que horizontal
             if (Math.abs(dx) < Math.abs(dy)) return;
 
-            // Config do gesto
-            const MIN_DIST = 35;     // distância mínima em px
-            const MAX_TIME = 700;    // tempo máximo do gesto em ms
+            const MIN_DIST = 35;
+            const MAX_TIME = 700;
 
             if (Math.abs(dx) < MIN_DIST) return;
             if (dt > MAX_TIME) return;
 
-            // Swipe para esquerda => próxima página
+            userInteracted();
+
             if (dx < 0) go(1);
             else go(-1);
         }, { passive: true });
 
         // ===== MODAL =====
-        // zoomFactor = 1 significa "tamanho normal" (fit na tela)
         let zoomFactor = 1;
         let baseW = 0;
         let baseH = 0;
-        let baseScale = 1; // calculado para caber no canvas
-        const minZoomFactor = 1;   // começa normal e não deixa diminuir abaixo do fit (ajuste se quiser)
+        let baseScale = 1;
+        const minZoomFactor = 1;
         const maxZoomFactor = 8;
 
         function computeBaseScaleFit(){
-            // margem para não encostar nas bordas
             const margin = 24;
             const cw = Math.max(1, canvas.clientWidth - margin * 2);
             const ch = Math.max(1, canvas.clientHeight - margin * 2);
-
-            // fit total dentro do canvas (sem aumentar acima de 1 por padrão)
             const fit = Math.min(cw / baseW, ch / baseH, 1);
             baseScale = fit;
         }
@@ -367,13 +557,11 @@
 
         pages.forEach(img=>{
             img.onclick = () => {
-                // sem clique lateral: só abre se for a central
                 if (img.dataset.active !== "true") return;
 
                 modalImg.src = img.src;
                 modal.classList.add('open');
 
-                // inicia SEMPRE no tamanho normal (fit)
                 zoomFactor = 1;
 
                 modalImg.onload = () => {
@@ -383,7 +571,6 @@
                     computeBaseScaleFit();
                     applyZoom();
 
-                    // volta o scroll para o centro no início
                     requestAnimationFrame(() => {
                         canvas.scrollTop  = (canvas.scrollHeight - canvas.clientHeight) / 2;
                         canvas.scrollLeft = (canvas.scrollWidth - canvas.clientWidth) / 2;
@@ -405,14 +592,12 @@
             applyZoom();
         };
 
-        // Se o usuário girar a tela / redimensionar: recalcula fit sem mudar o zoomFactor atual
         window.addEventListener('resize', () => {
             if (!modal.classList.contains('open')) return;
             computeBaseScaleFit();
             applyZoom();
         });
 
-        // ===== ZOOM NO SCROLL (APENAS NO MODAL) =====
         canvas.addEventListener('wheel', (e) => {
             if (!modal.classList.contains('open')) return;
             e.preventDefault();
@@ -422,13 +607,12 @@
             applyZoom();
         }, { passive:false });
 
-        // ===== PAN (mouse: segurar e arrastar) =====
+        // pan com mouse
         let isPanningMouse = false;
         let startX = 0, startY = 0;
         let startScrollLeft = 0, startScrollTop = 0;
 
         canvas.addEventListener('pointerdown', (e) => {
-            // pan com mouse apenas (no touch usamos touch events abaixo)
             if (e.pointerType !== 'mouse') return;
             if (e.button !== 0) return;
             e.preventDefault();
@@ -465,7 +649,7 @@
             canvas.classList.remove('grabbing');
         });
 
-        // ===== PINCH (celular) + PAN 1 dedo =====
+        // pinch + pan 1 dedo
         let tPanning = false;
         let tStartX = 0, tStartY = 0;
         let tStartScrollLeft = 0, tStartScrollTop = 0;
@@ -484,7 +668,6 @@
             if (!modal.classList.contains('open')) return;
 
             if (e.touches.length === 1){
-                // pan com 1 dedo
                 pinching = false;
                 tPanning = true;
 
@@ -495,7 +678,6 @@
             }
 
             if (e.touches.length === 2){
-                // pinch
                 tPanning = false;
                 pinching = true;
 
@@ -536,7 +718,6 @@
                 pinching = false;
             }
             if (e.touches.length === 1){
-                // saiu do pinch e ficou 1 dedo: volta a pan
                 pinching = false;
                 tPanning = true;
 
@@ -548,6 +729,7 @@
         }, { passive: true });
 
         render();
+        startAutoplay();
     })();
 </script>
 
