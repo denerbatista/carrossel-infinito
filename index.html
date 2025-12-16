@@ -181,6 +181,11 @@
             #next{ right: 14px; }
         }
 
+        @media (max-width: 768px) and (orientation: portrait){
+            .belt{ touch-action: pan-y; }
+        }
+
+
     </style>
 </head>
 
@@ -294,6 +299,51 @@
             if (use > 0) go(1);
             else go(-1);
         }, { passive:false });
+
+// ===== SWIPE NO CELULAR (deslizar o dedo = 1 página) =====
+        let swipeStartX = null;
+        let swipeStartY = null;
+        let swipeStartT = 0;
+
+        belt.addEventListener('touchstart', (e) => {
+            if (modal.classList.contains('open')) return;
+            if (!e.touches || e.touches.length !== 1) return;
+
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+            swipeStartT = Date.now();
+        }, { passive: true });
+
+        belt.addEventListener('touchend', (e) => {
+            if (modal.classList.contains('open')) return;
+            if (swipeStartX == null || swipeStartY == null) return;
+
+            const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+            if (!t) return;
+
+            const endX = t.clientX;
+            const endY = t.clientY;
+
+            const dx = endX - swipeStartX;
+            const dy = endY - swipeStartY;
+            const dt = Date.now() - swipeStartT;
+
+            swipeStartX = swipeStartY = null;
+
+            // Ignora se foi mais vertical que horizontal
+            if (Math.abs(dx) < Math.abs(dy)) return;
+
+            // Config do gesto
+            const MIN_DIST = 35;     // distância mínima em px
+            const MAX_TIME = 700;    // tempo máximo do gesto em ms
+
+            if (Math.abs(dx) < MIN_DIST) return;
+            if (dt > MAX_TIME) return;
+
+            // Swipe para esquerda => próxima página
+            if (dx < 0) go(1);
+            else go(-1);
+        }, { passive: true });
 
         // ===== MODAL =====
         // zoomFactor = 1 significa "tamanho normal" (fit na tela)
