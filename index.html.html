@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Carrossel infinito A4 (imagens) + Modal Zoom</title>
+    <style>
+        :root{
+            /* Leque horizontal */
+            --gapX: 96px;
+            --tiltY: 14deg;
+            --depth: 130px;
+            --sideScale: 0.88;
+            --centerScale: 1.0;
+            --lift: 16px;
+
+            --bg: #0f1220;
+            --panel: rgba(255,255,255,.06);
+            --panelBorder: rgba(255,255,255,.10);
+            --shadowCenter: 0 18px 55px rgba(0,0,0,.28);
+            --shadowSide:   0 12px 28px rgba(0,0,0,.18);
+        }
+
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: radial-gradient(1200px 700px at 50% 30%, #1a2140, var(--bg));
+            color:#e8ecff;
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+        }
+
+        header{
+            padding:18px;
+            max-width:1200px;
+            width:100%;
+            margin:0 auto;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+        header h1{ font-size:16px; margin:0; font-weight:700; }
+        header p{ font-size:13px; margin:0; opacity:.85; }
+
+        .stage{
+            flex:1;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:18px;
+        }
+
+        .carousel{
+            position:relative;
+            width:min(1200px, 96vw);
+            height:min(78vh, 860px);
+            background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.02));
+            border:1px solid var(--panelBorder);
+            border-radius:18px;
+            overflow:hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,.30);
+        }
+
+        .viewport{
+            position:absolute;
+            inset:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            perspective: 1100px;
+            perspective-origin: 50% 40%;
+            padding: 26px;
+        }
+
+        .belt{
+            position:relative;
+            width:100%;
+            height:100%;
+            transform-style:preserve-3d;
+        }
+
+        /* Cada folha é a imagem (sem wrapper) */
+        .pageImg{
+            position:absolute;
+            top:50%;
+            left:50%;
+
+            /* seu responsivo */
+            max-width: 25vw;
+            max-height: 72vh;
+
+            width: auto;
+            height: auto;
+
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,.10);
+
+            object-fit: contain; /* não cortar no carrossel */
+            background: #fff;
+
+            transform-style:preserve-3d;
+            transform-origin: center center;
+
+            box-shadow: var(--shadowSide);
+            cursor: pointer;
+            user-select:none;
+
+            transition:
+                    transform 420ms cubic-bezier(.2,.9,.2,1),
+                    box-shadow 420ms cubic-bezier(.2,.9,.2,1),
+                    filter 420ms cubic-bezier(.2,.9,.2,1);
+        }
+
+        /* melhora clique/seleção em mobile e evita “drag ghost” */
+        .pageImg{ -webkit-user-drag: none; }
+
+        .pageImg[data-active="true"]{
+            box-shadow: var(--shadowCenter);
+            filter: saturate(1.05) contrast(1.02);
+        }
+
+        .controls{
+            position:absolute;
+            inset:0;
+            pointer-events:none; /* permite clicar nas imagens atrás */
+            z-index:50;
+        }
+
+        .controls button{
+            pointer-events:auto; /* botões continuam clicáveis */
+            position:absolute;
+            top:50%;
+            transform:translateY(-50%);
+            appearance:none;
+            border:1px solid rgba(255,255,255,.18);
+            background: rgba(10,12,22,.55);
+            color:#fff;
+            padding:14px 16px;
+            border-radius:50%;
+            font-weight:700;
+            cursor:pointer;
+            backdrop-filter: blur(8px);
+        }
+
+        .controls #prev{
+            left:14px;
+        }
+
+        .controls #next{
+            right:14px;
+        }
+
+        button{
+            appearance:none;
+            border:1px solid rgba(255,255,255,.18);
+            background: rgba(255,255,255,.08);
+            color:#fff;
+            padding:10px 12px;
+            border-radius:12px;
+            font-weight:700;
+            cursor:pointer;
+        }
+
+        /* ===== Modal ===== */
+        .modal{
+            position:fixed;
+            inset:0;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:9999;
+        }
+        .modal[aria-hidden="false"]{ display:flex; }
+
+        .modal__backdrop{
+            position:absolute;
+            inset:0;
+            background: rgba(0,0,0,.58);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal__panel{
+            position:relative;
+            width:min(92vw, 1100px);
+            height:min(92vh, 980px);
+            background: rgba(20,24,40,.70);
+            border:1px solid rgba(255,255,255,.16);
+            border-radius:18px;
+            box-shadow: 0 30px 120px rgba(0,0,0,.55);
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .modal__topbar{
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap:8px;
+            padding:10px 12px;
+            background: rgba(0,0,0,.18);
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            color:#fff;
+        }
+        .iconbtn{
+            border:1px solid rgba(255,255,255,.18);
+            background: rgba(255,255,255,.08);
+            color:#fff;
+            padding:8px 10px;
+            border-radius:12px;
+            font-weight:800;
+            cursor:pointer;
+            min-width:44px;
+        }
+
+        .modal__canvas{
+            flex:1;
+            overflow:auto;
+            padding: 36px; /* padding maior para nunca “cortar” no topo quando zoom */
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        /* No modal: sempre imagem inteira (contain), sem corte */
+        .modal__img{
+            max-width: 86vw;
+            max-height: 80vh;
+            width: auto;
+            height: auto;
+
+            object-fit: contain;
+            background:#fff;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,.10);
+            box-shadow: 0 18px 60px rgba(0,0,0,.35);
+
+            transform-origin: center center;
+            user-select:none;
+            cursor: zoom-in;
+        }
+
+        @media (max-width: 720px){
+            :root{ --gapX: 70px; --tiltY: 12deg; }
+            .modal__panel{ width: 96vw; height: 94vh; }
+            .modal__canvas{ padding: 22px; }
+        }
+    </style>
+</head>
+<body>
+<main class="stage">
+    <section class="carousel" aria-label="Carrossel de páginas A4 (imagens)">
+        <div class="viewport">
+            <div class="belt" id="belt">
+
+                <!-- Suas imagens -->
+                <img class="pageImg" src="./img/1.jpg" alt="Página 1" />
+                <img class="pageImg" src="./img/2.jpg" alt="Página 2" />
+                <img class="pageImg" src="./img/3.jpg" alt="Página 3" />
+                <img class="pageImg" src="./img/4.jpg" alt="Página 4" />
+                <img class="pageImg" src="./img/5.jpg" alt="Página 5" />
+                <img class="pageImg" src="./img/6.jpg" alt="Página 6" />
+                <img class="pageImg" src="./img/7.jpg" alt="Página 7" />
+
+            </div>
+        </div>
+
+        <div class="controls">
+            <button type="button" id="prev" aria-label="Anterior">◀</button>
+            <button type="button" id="next" aria-label="Próximo">▶</button>
+        </div>
+
+    </section>
+</main>
+
+<!-- Modal -->
+<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+
+    <div class="modal__panel" role="document" aria-label="Visualização ampliada">
+        <div class="modal__topbar">
+            <button class="iconbtn" id="zoomOut" type="button" aria-label="Diminuir zoom">−</button>
+            <button class="iconbtn" id="zoomIn" type="button" aria-label="Aumentar zoom">+</button>
+            <button class="iconbtn" id="zoomReset" type="button" aria-label="Reset zoom">1:1</button>
+            <button class="iconbtn" id="modalClose" type="button" aria-label="Fechar">✕</button>
+        </div>
+
+        <div class="modal__canvas" id="modalCanvas">
+            <img class="modal__img" id="modalImg" alt="Imagem ampliada" />
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const belt = document.getElementById('belt');
+        const pages = Array.from(belt.querySelectorAll('.pageImg'));
+
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+
+        // Modal
+        const modal = document.getElementById('modal');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalClose = document.getElementById('modalClose');
+        const modalCanvas = document.getElementById('modalCanvas');
+        const modalImg = document.getElementById('modalImg');
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const zoomResetBtn = document.getElementById('zoomReset');
+
+        // Índice real (pode crescer/encolher sem limite) -> carrossel infinito
+        let activeReal = 0;
+
+        const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+        const mod = (n,m)=>((n % m) + m) % m;
+
+        // Zoom no modal
+        let scale = 1;
+        const minScale = 0.6;
+        const maxScale = 4;
+
+        function applyZoom(){
+            modalImg.style.transform = `scale(${scale})`;
+            modalImg.style.cursor = (scale > 1.02) ? 'zoom-out' : 'zoom-in';
+        }
+
+        function openModalFrom(imgEl){
+            modalImg.src = imgEl.currentSrc || imgEl.src;
+            modalImg.alt = imgEl.alt || 'Imagem';
+
+            scale = 1;
+            applyZoom();
+
+            requestAnimationFrame(() => {
+                modalCanvas.scrollTop  = (modalCanvas.scrollHeight - modalCanvas.clientHeight) / 2;
+                modalCanvas.scrollLeft = (modalCanvas.scrollWidth - modalCanvas.clientWidth) / 2;
+            });
+
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(){
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            modalImg.removeAttribute('src');
+        }
+
+        // Render infinito
+        function render(){
+            const root = getComputedStyle(document.documentElement);
+            const gapX = parseFloat(root.getPropertyValue('--gapX')) || 96;
+            const tiltY = parseFloat(root.getPropertyValue('--tiltY')) || 14;
+            const depth = parseFloat(root.getPropertyValue('--depth')) || 130;
+            const sideScale = parseFloat(root.getPropertyValue('--sideScale')) || 0.88;
+            const centerScale = parseFloat(root.getPropertyValue('--centerScale')) || 1.0;
+            const lift = parseFloat(root.getPropertyValue('--lift')) || 16;
+
+            const activeIndex = mod(activeReal, pages.length);
+
+            pages.forEach((img, i) => {
+                // diferença em anel (caminho mais curto)
+                let d = i - activeIndex;
+                const half = Math.floor(pages.length / 2);
+                if (d >  half) d -= pages.length;
+                if (d < -half) d += pages.length;
+
+                const offset = d;
+                const abs = Math.abs(offset);
+                const dir = Math.sign(offset);
+
+                const x = offset * gapX;
+                const rotY = offset === 0 ? 0 : (-dir * tiltY);
+                const z = -abs * depth;
+                const y = offset === 0 ? -lift : 0;
+
+                const isActive = (offset === 0);
+                const s = isActive ? centerScale : sideScale;
+
+                img.style.zIndex = 1000 - abs;
+                img.dataset.active = String(isActive);
+
+                img.style.transform =
+                    `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${rotY}deg) scale(${s})`;
+
+                img.style.filter = isActive ? 'none' : `brightness(${0.92 - abs*0.03})`;
+            });
+        }
+
+        function go(delta){
+            activeReal += delta;   // infinito
+            render();
+        }
+
+        // ===== Clique robusto: sempre centraliza a imagem mais próxima do clique =====
+        function indexClosestToPoint(clientX, clientY){
+            let bestIdx = 0;
+            let bestDist = Infinity;
+
+            pages.forEach((img, i) => {
+                const r = img.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+                const dx = cx - clientX;
+                const dy = cy - clientY;
+                const dist = dx*dx + dy*dy;
+                if (dist < bestDist){
+                    bestDist = dist;
+                    bestIdx = i;
+                }
+            });
+
+            return bestIdx;
+        }
+
+        belt.addEventListener('click', (e) => {
+            if (modal.getAttribute('aria-hidden') === 'false') return;
+
+            const clickedIdx = indexClosestToPoint(e.clientX, e.clientY);
+            const activeIndex = mod(activeReal, pages.length);
+
+            if (clickedIdx !== activeIndex){
+                // anda pelo caminho mais curto até o clickedIdx
+                let d = clickedIdx - activeIndex;
+                const half = Math.floor(pages.length / 2);
+                if (d >  half) d -= pages.length;
+                if (d < -half) d += pages.length;
+
+                activeReal += d;
+                render();
+                return;
+            }
+
+            // se a mais próxima já é a central, abre modal
+            openModalFrom(pages[activeIndex]);
+        });
+
+        // Botões
+        prevBtn.addEventListener('click', () => go(-1));
+        nextBtn.addEventListener('click', () => go( 1));
+
+        // Teclado
+        window.addEventListener('keydown', (e) => {
+            const modalOpen = modal.getAttribute('aria-hidden') === 'false';
+            if (modalOpen){
+                if (e.key === 'Escape') closeModal();
+                return;
+            }
+            if (e.key === 'ArrowLeft') go(-1);
+            if (e.key === 'ArrowRight') go(1);
+            if (e.key === 'Enter'){
+                const idx = mod(activeReal, pages.length);
+                openModalFrom(pages[idx]);
+            }
+        });
+
+        // Scroll do mouse no carrossel (também navega)
+        let wheelLock = false;
+        belt.addEventListener('wheel', (e) => {
+            if (modal.getAttribute('aria-hidden') === 'false') return;
+
+            const dx = Math.abs(e.deltaX);
+            const dy = Math.abs(e.deltaY);
+            const use = dx > dy ? e.deltaX : e.deltaY;
+
+            if (Math.abs(use) < 6) return;
+            e.preventDefault();
+
+            if (wheelLock) return;
+            wheelLock = true;
+            setTimeout(() => wheelLock = false, 110);
+
+            if (use > 0) go(1);
+            else go(-1);
+        }, { passive:false });
+
+        // Swipe touch no carrossel
+        let startX = null;
+        belt.addEventListener('touchstart', (e) => {
+            if (!e.touches || e.touches.length !== 1) return;
+            startX = e.touches[0].clientX;
+        }, { passive:true });
+
+        belt.addEventListener('touchend', (e) => {
+            if (startX == null) return;
+            const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : startX;
+            const dx = endX - startX;
+            startX = null;
+            if (Math.abs(dx) < 40) return;
+            if (dx < 0) go(1); else go(-1);
+        }, { passive:true });
+
+        // Modal fechar
+        modalBackdrop.addEventListener('click', closeModal);
+        modalClose.addEventListener('click', closeModal);
+
+        // Zoom botões
+        zoomInBtn.addEventListener('click', () => {
+            scale = clamp(scale * 1.15, minScale, maxScale);
+            applyZoom();
+        });
+        zoomOutBtn.addEventListener('click', () => {
+            scale = clamp(scale / 1.15, minScale, maxScale);
+            applyZoom();
+        });
+        zoomResetBtn.addEventListener('click', () => {
+            scale = 1;
+            applyZoom();
+        });
+
+        // Zoom scroll no modal
+        modalCanvas.addEventListener('wheel', (e) => {
+            if (modal.getAttribute('aria-hidden') === 'true') return;
+            e.preventDefault();
+            const factor = (e.deltaY < 0) ? 1.08 : (1/1.08);
+            scale = clamp(scale * factor, minScale, maxScale);
+            applyZoom();
+        }, { passive:false });
+
+        // Duplo clique alterna 1x/2x
+        modalImg.addEventListener('dblclick', () => {
+            scale = (Math.abs(scale - 1) < 0.05) ? 2 : 1;
+            applyZoom();
+        });
+
+        // Clique na imagem do modal alterna zoom (opcional)
+        modalImg.addEventListener('click', () => {
+            scale = (scale > 1.02) ? 1 : 2;
+            applyZoom();
+        });
+
+        render();
+        window.addEventListener('resize', render);
+    })();
+</script>
+</body>
+</html>
