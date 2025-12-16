@@ -104,7 +104,7 @@
             transform-origin: center center;
 
             box-shadow: var(--shadowSide);
-            cursor: pointer;
+            cursor: default;   /* sem navegação por clique lateral */
             user-select:none;
 
             transition:
@@ -119,17 +119,19 @@
         .pageImg[data-active="true"]{
             box-shadow: var(--shadowCenter);
             filter: saturate(1.05) contrast(1.02);
+            cursor: zoom-in; /* só a central abre modal */
         }
 
+        /* Setas esquerda e direita (sem rodapé contador) */
         .controls{
             position:absolute;
             inset:0;
-            pointer-events:none; /* permite clicar nas imagens atrás */
+            pointer-events:none;
             z-index:50;
         }
 
         .controls button{
-            pointer-events:auto; /* botões continuam clicáveis */
+            pointer-events:auto;
             position:absolute;
             top:50%;
             transform:translateY(-50%);
@@ -144,24 +146,8 @@
             backdrop-filter: blur(8px);
         }
 
-        .controls #prev{
-            left:14px;
-        }
-
-        .controls #next{
-            right:14px;
-        }
-
-        button{
-            appearance:none;
-            border:1px solid rgba(255,255,255,.18);
-            background: rgba(255,255,255,.08);
-            color:#fff;
-            padding:10px 12px;
-            border-radius:12px;
-            font-weight:700;
-            cursor:pointer;
-        }
+        .controls #prev{ left:14px; }
+        .controls #next{ right:14px; }
 
         /* ===== Modal ===== */
         .modal{
@@ -217,8 +203,8 @@
 
         .modal__canvas{
             flex:1;
-            overflow:auto;
-            padding: 36px; /* padding maior para nunca “cortar” no topo quando zoom */
+            overflow:auto;      /* essencial para “crescer e scrollar” sem cortar */
+            padding: 36px;      /* evita sensação de corte nas bordas */
             display:flex;
             align-items:center;
             justify-content:center;
@@ -240,6 +226,8 @@
             transform-origin: center center;
             user-select:none;
             cursor: zoom-in;
+
+            display:block; /* remove comportamento inline que pode “comer” espaço visual */
         }
 
         @media (max-width: 720px){
@@ -250,19 +238,24 @@
     </style>
 </head>
 <body>
+<header>
+    <h1>Carrossel infinito “leque” (imagens verticais) + modal com zoom</h1>
+    <p>Navegação somente por scroll do mouse e setas. Clique apenas na imagem central para abrir o modal. Fecha fora/X/ESC.</p>
+</header>
+
 <main class="stage">
     <section class="carousel" aria-label="Carrossel de páginas A4 (imagens)">
         <div class="viewport">
             <div class="belt" id="belt">
 
                 <!-- Suas imagens -->
-                <img class="pageImg" src="./img/1.jpg" alt="Página 1" />
-                <img class="pageImg" src="./img/2.jpg" alt="Página 2" />
-                <img class="pageImg" src="./img/3.jpg" alt="Página 3" />
-                <img class="pageImg" src="./img/4.jpg" alt="Página 4" />
-                <img class="pageImg" src="./img/5.jpg" alt="Página 5" />
-                <img class="pageImg" src="./img/6.jpg" alt="Página 6" />
-                <img class="pageImg" src="./img/7.jpg" alt="Página 7" />
+                <img class="pageImg" src="./img/1.png" alt="Página 1" />
+                <img class="pageImg" src="./img/2.png" alt="Página 2" />
+                <img class="pageImg" src="./img/3.png" alt="Página 3" />
+                <img class="pageImg" src="./img/4.png" alt="Página 4" />
+                <img class="pageImg" src="./img/5.png" alt="Página 5" />
+                <img class="pageImg" src="./img/6.png" alt="Página 6" />
+                <img class="pageImg" src="./img/7.png" alt="Página 7" />
 
             </div>
         </div>
@@ -271,7 +264,6 @@
             <button type="button" id="prev" aria-label="Anterior">◀</button>
             <button type="button" id="next" aria-label="Próximo">▶</button>
         </div>
-
     </section>
 </main>
 
@@ -312,6 +304,7 @@
         const zoomResetBtn = document.getElementById('zoomReset');
 
         // Índice real (pode crescer/encolher sem limite) -> carrossel infinito
+        // Se quiser iniciar na imagem 1 como central, use activeReal = 0
         let activeReal = 0;
 
         const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
@@ -334,6 +327,7 @@
             scale = 1;
             applyZoom();
 
+            // centraliza scroll inicial (sem cortar nada; apenas posiciona)
             requestAnimationFrame(() => {
                 modalCanvas.scrollTop  = (modalCanvas.scrollHeight - modalCanvas.clientHeight) / 2;
                 modalCanvas.scrollLeft = (modalCanvas.scrollWidth - modalCanvas.clientWidth) / 2;
@@ -395,47 +389,12 @@
             render();
         }
 
-        // ===== Clique robusto: sempre centraliza a imagem mais próxima do clique =====
-        function indexClosestToPoint(clientX, clientY){
-            let bestIdx = 0;
-            let bestDist = Infinity;
-
-            pages.forEach((img, i) => {
-                const r = img.getBoundingClientRect();
-                const cx = r.left + r.width / 2;
-                const cy = r.top + r.height / 2;
-                const dx = cx - clientX;
-                const dy = cy - clientY;
-                const dist = dx*dx + dy*dy;
-                if (dist < bestDist){
-                    bestDist = dist;
-                    bestIdx = i;
-                }
+        // ===== Removido: clique para centralizar laterais =====
+        // Clique SOMENTE na imagem central abre modal
+        pages.forEach((img) => {
+            img.addEventListener('click', () => {
+                if (img.dataset.active === "true") openModalFrom(img);
             });
-
-            return bestIdx;
-        }
-
-        belt.addEventListener('click', (e) => {
-            if (modal.getAttribute('aria-hidden') === 'false') return;
-
-            const clickedIdx = indexClosestToPoint(e.clientX, e.clientY);
-            const activeIndex = mod(activeReal, pages.length);
-
-            if (clickedIdx !== activeIndex){
-                // anda pelo caminho mais curto até o clickedIdx
-                let d = clickedIdx - activeIndex;
-                const half = Math.floor(pages.length / 2);
-                if (d >  half) d -= pages.length;
-                if (d < -half) d += pages.length;
-
-                activeReal += d;
-                render();
-                return;
-            }
-
-            // se a mais próxima já é a central, abre modal
-            openModalFrom(pages[activeIndex]);
         });
 
         // Botões
@@ -477,7 +436,7 @@
             else go(-1);
         }, { passive:false });
 
-        // Swipe touch no carrossel
+        // Swipe touch no carrossel (opcional)
         let startX = null;
         belt.addEventListener('touchstart', (e) => {
             if (!e.touches || e.touches.length !== 1) return;
@@ -511,7 +470,7 @@
             applyZoom();
         });
 
-        // Zoom scroll no modal
+        // Zoom scroll no modal (cresce e scrolla sem perder partes)
         modalCanvas.addEventListener('wheel', (e) => {
             if (modal.getAttribute('aria-hidden') === 'true') return;
             e.preventDefault();
