@@ -143,6 +143,44 @@
             user-select:none;
             -webkit-user-drag:none;
         }
+
+        /* ===== AJUSTE PARA CELULAR EM PÉ (PORTRAIT) ===== */
+        @media (max-width: 768px) and (orientation: portrait) {
+
+            :root{
+                --gapX: 42px;     /* aproxima as páginas */
+                --depth: 70px;    /* reduz profundidade 3D */
+                --tiltY: 8deg;    /* menos inclinação */
+                --sideScale: 0.92;
+            }
+
+            .carousel{
+                height: 78vh; /* evita “esticar” demais */
+            }
+
+            .pageImg{
+                max-width: 68vw;   /* páginas mais largas no celular */
+                max-height: 70vh;
+            }
+
+            /* Setas fora da área das páginas */
+            .controls{
+                pointer-events:none;
+            }
+
+            .controls button{
+                top: auto;
+                bottom: 14px;
+                transform: none;
+                pointer-events:auto;
+                width:48px;
+                height:48px;
+            }
+
+            #prev{ left: 14px; }
+            #next{ right: 14px; }
+        }
+
     </style>
 </head>
 
