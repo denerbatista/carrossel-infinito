@@ -37,6 +37,7 @@
             /* reserva espaço visual pro rodapé integrado */
             padding-bottom: 150px;
         }
+
         .viewport{
             position:absolute;
             inset:0;
@@ -53,8 +54,8 @@
             position:absolute;
             top:50%;
             left:50%;
-            max-width:25vw;
-            max-height:72vh;
+            max-width:60vw;
+            max-height:60vh;
             width:auto;
             height:auto;
             background:#fff;
@@ -113,24 +114,36 @@
             backdrop-filter: blur(6px);
         }
 
-        .carouselText{
-            display:flex;
-            flex-direction:column;
-            gap:6px;
-            margin-bottom:10px;
-            max-width: 980px;
+        .carouselFooter{
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
         }
-        .carouselTitle{
-            margin:0;
-            font-size:18px;
-            font-weight:700;
+
+        /* === TÍTULO DO CARROSSEL === */
+        #carouselTitle{
+            color: #ffffff;              /* text-white */
+            font-size: 1.5rem;            /* text-2xl */
+            font-weight: 600;             /* font-semibold */
+            line-height: 1.25;
+            margin: 0 0 0 35px;
         }
-        .carouselDesc{
-            margin:0;
-            opacity:.88;
-            line-height:1.35;
-            font-size:14px;
+
+        /* === DESCRIÇÃO DO CARROSSEL === */
+        #carouselDesc{
+            color: rgba(255,255,255,.8);  /* text-white/80 */
+            font-size: 0.875rem;          /* text-sm */
+            line-height: 1.625;           /* leading-relaxed */
+            margin: 0 0 0 35px;
         }
+
+        /* md:text-base */
+        @media (min-width: 768px){
+            #carouselDesc{
+                font-size: 1rem;          /* text-base */
+            }
+        }
+
 
         .carouselDots{
             display:flex;
@@ -153,26 +166,42 @@
         }
 
         .carouselLabels{
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            justify-content:center;
+            display:grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap:14px;
+            justify-items:stretch;
+            align-items:stretch;
+            max-width: 100%;
+            margin: 0 auto 0; /* joga os cards mais para baixo */
         }
+        /* Botões no estilo "cards" claros (como na referência) */
         .carouselLabel{
-            border:none;
             cursor:pointer;
-            padding:10px 12px;
-            border-radius:10px;
-            background:rgba(255,255,255,.10);
-            color:#fff;
+            padding:18px 22px;
+            border-radius:12px;
+
+            background:#f6f7fb;
+            color:#374151;
+
+            border:1px solid #e5e7eb;
+            box-shadow:0 2px 10px rgba(0,0,0,.10);
+
             font-weight:600;
-            font-size:13px;
-            border:1px solid rgba(255,255,255,.14);
-            transition:all .25s ease;
+            font-size:16px;
+            text-align:center;
+
+            transition:box-shadow .2s ease, transform .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
+            width: 100%;
+            min-width: 0;
+        }
+        .carouselLabel:hover{
+            box-shadow:0 6px 18px rgba(0,0,0,.14);
         }
         .carouselLabel.active{
-            background:rgba(255,255,255,.18);
-            border-color:rgba(255,255,255,.24);
+            background:#ffffff;
+            border-color:#cfd5e3;
+            color:#111827;
+            box-shadow:0 10px 26px rgba(0,0,0,.16);
         }
 
         /* ===== MODAL ===== */
@@ -261,7 +290,7 @@
 
             .carouselTitle{ font-size:16px; }
             .carouselDesc{ font-size:13px; }
-            .carouselLabel{ padding:9px 10px; font-size:12px; }
+            .carouselLabel{ padding:14px 16px; font-size:14px; min-width: 170px; }
         }
 
         @media (max-width: 420px) and (orientation: portrait) {
@@ -274,7 +303,15 @@
         @media (max-width: 768px) and (orientation: portrait){
             .belt{ touch-action: pan-y; }
         }
-    </style>
+    
+        @media (max-width:992px){
+            .carouselLabels{ grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 720px; }
+        }
+        @media (max-width:768px){
+            .carouselLabels{ grid-template-columns: 1fr; max-width: 520px; }
+            .carouselLabel{ padding:14px 16px; font-size:14px; min-width: 0; }
+        }
+</style>
 </head>
 
 <body>
@@ -282,13 +319,15 @@
 <div class="carousel">
     <div class="viewport">
         <div class="belt" id="belt">
-            <img class="pageImg" src="./img/1.png" alt="1" draggable="false">
-            <img class="pageImg" src="./img/2.png" alt="2" draggable="false">
-            <img class="pageImg" src="./img/3.png" alt="3" draggable="false">
-            <img class="pageImg" src="./img/4.png" alt="4" draggable="false">
-            <img class="pageImg" src="./img/5.png" alt="5" draggable="false">
-            <img class="pageImg" src="./img/6.png" alt="6" draggable="false">
-            <img class="pageImg" src="./img/7.png" alt="7" draggable="false">
+            <img class="pageImg" src="./site/system-revisor-ia.png" title="Inteligência Artificial" alt="Revisão de Itens usando agentes de IA em conjunto com revisores humanos" draggable="false">
+            <img class="pageImg" src="./site/system-screenshot-2-demands.png" title="Gestão de Encomenda de Itens" alt="Lista de Demandas - Interface para gestão de atividades pedagógicas" draggable="false">
+            <img class="pageImg" src="./site/system-screenshot-4-item-creation.png" title="Elaboração de Itens" alt="Elaboração de Itens - Interface completa para criação de questões alinhadas à BNCC" draggable="false">
+            <img class="pageImg" src="./site/system-screenshot-prova-exemplo.jpg" title="Diagramação via Algoritmo" alt="Diagramação de prova nominal com opções de acessibilidade" draggable="false">
+            <img class="pageImg" src="./site/aplicativo-lista-presenca.jpeg" title="Lista de Presença e Gabarito" alt="Aplicativo de preenchimento de lista de presença e gabarito" draggable="false">
+            <img class="pageImg" src="./site/system-screenshot-3-abilities.png" title="Análise por Habilidades" alt="Análise de Habilidades - Comparação de turmas por competência" draggable="false">
+            <img class="pageImg" src="./site/system-screenshot-1-proficiency.png" title="Níveis de Proficiência" alt="Níveis de Proficiência - Visualização de desempenho dos alunos por escala SAEB" draggable="false">
+            <img class="pageImg" src="./site/system-omr.png" title="Leitor OMR" alt="Leitura de cartões resposta com script OMR" draggable="false">
+            <img class="pageImg" src="./site/system-importacao.png" title="Módulo de Importação" alt="Sistema de importação de dados com validação robusta" draggable="false">
         </div>
     </div>
 
@@ -296,17 +335,16 @@
         <button id="prev">◀</button>
         <button id="next">▶</button>
     </div>
-
-    <!-- ===== RODAPÉ INTEGRADO (dentro do carrossel) ===== -->
-    <div class="carouselInfo" id="carouselInfo">
-        <div class="carouselText">
-            <h3 class="carouselTitle" id="carouselTitle">Página 1</h3>
-            <p class="carouselDesc" id="carouselDesc">Descrição da Página 1.</p>
-        </div>
-
-        <div class="carouselDots" id="carouselDots" aria-label="Navegação por bolinhas"></div>
-        <div class="carouselLabels" id="carouselLabels" aria-label="Navegação por botões"></div>
+</div>
+<!-- ===== RODAPÉ INTEGRADO (dentro do carrossel) ===== -->
+<div class="carouselInfo" id="carouselInfo">
+    <div class="carouselFooter">
+        <h3 id="carouselTitle"></h3>
+        <p id="carouselDesc"></p>
     </div>
+
+    <div class="carouselDots" id="carouselDots" aria-label="Navegação por bolinhas"></div>
+    <div class="carouselLabels" id="carouselLabels" aria-label="Navegação por botões"></div>
 </div>
 
 <!-- MODAL -->
@@ -384,15 +422,21 @@
         }
 
         function updateInfo(activeIndex){
-            const meta = pageMeta[activeIndex] || { title: `Página ${activeIndex+1}`, desc: "" };
-            if (titleEl) titleEl.textContent = meta.title;
-            if (descEl) descEl.textContent = meta.desc;
+            const img = pages[activeIndex];
+            if (!img) return;
+
+            if (titleEl) titleEl.textContent = img.getAttribute('title') || '';
+            if (descEl)  descEl.textContent  = img.getAttribute('alt')   || '';
 
             if (dotsWrap){
-                [...dotsWrap.children].forEach((b, i) => b.classList.toggle('active', i === activeIndex));
+                [...dotsWrap.children].forEach((b, i) =>
+                    b.classList.toggle('active', i === activeIndex)
+                );
             }
             if (labelsWrap){
-                [...labelsWrap.children].forEach((b, i) => b.classList.toggle('active', i === activeIndex));
+                [...labelsWrap.children].forEach((b, i) =>
+                    b.classList.toggle('active', i === activeIndex)
+                );
             }
         }
 
@@ -411,15 +455,23 @@
 
         if (labelsWrap){
             labelsWrap.innerHTML = '';
-            pages.forEach((_, i) => {
+            pages.forEach((img, i) => {
                 const b = document.createElement('button');
                 b.type = 'button';
                 b.className = 'carouselLabel';
-                b.textContent = pageMeta[i]?.title || `Página ${i+1}`;
-                b.addEventListener('click', (e) => { e.stopPropagation(); setActiveByIndex(i); });
+
+                // 🔑 pega direto do title da imagem
+                b.textContent = img.getAttribute('title') || `Página ${i+1}`;
+
+                b.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setActiveByIndex(i);
+                });
+
                 labelsWrap.appendChild(b);
             });
         }
+
 
         // evita que clique no rodapé integrado dispare ações do carrossel
         carouselInfo?.addEventListener('click', (e) => e.stopPropagation());

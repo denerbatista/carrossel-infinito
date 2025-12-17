@@ -5,22 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3ca2636-730a-41af-8afa-7cfeebf7b444" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/img/1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/5.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/6.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/7.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/1.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/2.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/3.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/4.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/5.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/6.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/7.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,9 +19,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="C:/xampp/php/php.exe" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="36w9SqD10UmfRPX3EkeqxW4mC2y" />
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
@@ -47,6 +32,7 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "main",
@@ -77,6 +63,7 @@
       <option name="presentableId" value="Default" />
       <updated>1765906768968</updated>
       <workItem from="1765906770407" duration="525000" />
+      <workItem from="1765972684052" duration="5234000" />
     </task>
     <servers />
   </component>
